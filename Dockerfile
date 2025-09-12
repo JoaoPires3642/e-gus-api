@@ -1,14 +1,12 @@
-# Etapa base com Java 21
-FROM eclipse-temurin:21-jdk-alpine
-
-# Diretório de trabalho no container
+# Etapa 1: build com Maven
+FROM maven:3.9.4-eclipse-temurin-21 AS builder
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copia o arquivo JAR do build local para dentro do container
-COPY target/*.jar app.jar
-
-# Expõe a porta padrão do Spring Boot
+# Etapa 2: imagem final com Java 21
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Comando para rodar o JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
